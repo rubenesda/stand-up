@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
-import "./../app/app.css";
 import { Amplify } from "aws-amplify";
 import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
+import List from "./components/list";
 
 Amplify.configure(outputs);
 
@@ -32,20 +32,16 @@ export default function App() {
   }
 
   return (
-    <main>
-      <h1>My todos</h1>
-      <button onClick={createTodo}>+ new</button>
-      <ul>
-        {todos.map((todo) => (
-          <li key={todo.id}>{todo.content}</li>
-        ))}
-      </ul>
-      <div>
-        🥳 App successfully hosted. Try creating a new todo.
-        <br />
-        <a href="https://docs.amplify.aws/nextjs/start/quickstart/nextjs-app-router-client-components/">
-          Review next steps of this tutorial.
-        </a>
+    <main className="flex flex-col justify-center">
+      <form className="flex flex-row justify-center py-8">
+        {/* Generator */}
+        <label className="mr-2">Hours: </label>
+        <input className="border-2 mr-10 rounded placeholder:italic placeholder:text-slate-400" placeholder="Type number of hours"></input>
+        <button className="hover:bg-gray-100 border-2 border-current rounded-md px-4" type="submit">Generate</button>
+      </form>
+      <div className="flex flex-row justify-center min-h-screen py-8">
+        <List title="To-Do"/>
+        <List title="Done"/>
       </div>
     </main>
   );
