@@ -13,35 +13,65 @@ Amplify.configure(outputs);
 const client = generateClient<Schema>();
 
 export default function App() {
-  const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
+  const [standUps, setStandUps] = useState<Array<Schema["Standup"]["type"]>>([]);
+  const [standUpsDone, setStandUpsDone] = useState<Array<Schema["Standup"]["type"]>>([]);
+  const [hours, setHours] = useState<string>("");
 
-  function listTodos() {
-    client.models.Todo.observeQuery().subscribe({
-      next: (data) => setTodos([...data.items]),
+  function listStandUps() {
+    client.models.Standup.observeQuery({ filter: { isDone: { eq: 'false' } } }).subscribe({
+      next: (data) => setStandUps([...data.items]),
+    });
+  }
+
+  function listStandUpsDone() {
+    client.models.Standup.observeQuery({ filter: { isDone: { eq: 'true' } }}).subscribe({
+      next: (data) => setStandUpsDone([...data.items]),
     });
   }
 
   useEffect(() => {
-    listTodos();
+    listStandUps();
+    listStandUpsDone();
   }, []);
 
-  function createTodo() {
-    client.models.Todo.create({
-      content: window.prompt("Todo content"),
+  async function createStandUp(e: any) {
+    e.preventDefault();
+    console.log('30 Executed');
+    const dateNow = new Date();
+    await client.models.Standup.create({
+      hours: parseInt(hours, 10),
+      attempt: 1,
+      standupGroupId: dateNow.getTime().toString(),
+      isDone: 'false',
     });
+    setHours('');
+  }
+
+  function handleChange(e: any) {
+    setHours(e.target.value);
   }
 
   return (
     <main className="flex flex-col justify-center">
-      <form className="flex flex-row justify-center py-8">
+      {
+        standUps.length > 0 || standUpsDone.length > 0 ?
+        <>
+        </>
+        :
+        <form onSubmit={createStandUp} className="flex flex-row justify-center py-8">
         {/* Generator */}
         <label className="mr-2">Hours: </label>
-        <input className="border-2 mr-10 rounded placeholder:italic placeholder:text-slate-400" placeholder="Type number of hours"></input>
+        <input
+          className="border-2 mr-10 rounded placeholder:italic placeholder:text-slate-400"
+          placeholder="Type number of hours"
+          onChange={handleChange}
+          value={hours}
+        />
         <button className="hover:bg-gray-100 border-2 border-current rounded-md px-4" type="submit">Generate</button>
-      </form>
+      </form>}
       <div className="flex flex-row justify-center min-h-screen py-8">
-        <List title="To-Do"/>
-        <List title="Done"/>
+        <List title="To-Do" items={standUps} listStandUp={listStandUps} listStandUpDone={listStandUpsDone}/>
+        <List title="Done" items={standUpsDone} listStandUp={listStandUps} listStandUpDone={listStandUpsDone}/>
       </div>
     </main>
   );
